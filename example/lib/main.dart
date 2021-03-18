@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -28,7 +28,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _text = "";
   Lemmatizer lemmatizer = new Lemmatizer();
-  TextEditingController _controller;
+  late TextEditingController _controller;
+
   @override
   void initState() {
     _controller = new TextEditingController();
@@ -63,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   'Lemmatized Word : $_text',
                 ),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: _lemmatize,
                 child: Text('Lemmatize'),
               )

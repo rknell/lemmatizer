@@ -1,15 +1,22 @@
 library lemmatizer;
 
-import 'package:flutter/services.dart';
+import "assets/adj_exc.dart";
+import "assets/adv_exc.dart";
+import "assets/index_adj.dart";
+import "assets/index_adv.dart";
+import "assets/index_noun.dart";
+import "assets/index_verb.dart";
+import "assets/noun_exc.dart";
+import "assets/verb_exc.dart";
 
 enum POS { NOUN, VERB, ADJ, ADV, ABBR, UNKNOWN }
 
 class Lemmatizer {
   static const WN_FILES = {
-    POS.NOUN: ['index_noun.txt', 'noun_exc.txt'],
-    POS.VERB: ['index_verb.txt', 'verb_exc.txt'],
-    POS.ADJ: ['index_adj.txt', 'adj_exc.txt'],
-    POS.ADV: ['index_adv.txt', 'adv_exc.txt']
+    POS.NOUN: [INDEX_NOUN, NOUN_EXC],
+    POS.VERB: [INDEX_VERB, VERB_EXC],
+    POS.ADJ: [INDEX_ADJ, ADJ_EXC],
+    POS.ADV: [INDEX_ADV, ADV_EXC]
   };
 
   static const MORPHOLOGICAL_SUBSTITUTIONS = {
@@ -63,7 +70,7 @@ class Lemmatizer {
     }
   }
 
-  String lemma(form, {String pos}) {
+  String lemma(String form, {String? pos}) {
     var words = ["verb", "noun", "adj", "adv", "abbr"];
     if (!words.contains(pos)) {
       for (var item in words) {
@@ -83,21 +90,17 @@ class Lemmatizer {
     return form;
   }
 
-  Future<void> loadWordnetFiles(POS pos, list, exc) async {
-    var fileList =
-        await rootBundle.loadString("packages/lemmatizer/assets/" + list);
-    var listLines = fileList.split("\n");
+  Future<void> loadWordnetFiles(POS pos, String list, String exc) async {
+    var listLines = list.trim().split("\n");
 
     for (var line in listLines) {
       var w = line.split(" ")[0];
       wordlists[pos][w] = w;
     }
 
-    var fileExc =
-        await rootBundle.loadString("packages/lemmatizer/assets/" + exc);
-    var listExc = fileExc.split("\n");
+    var listExc = exc.trim().split("\n");
 
-    if (fileExc.trim().length > 0) {
+    if (exc.trim().length > 0) {
       for (var line in listExc) {
         if (line.trim().length > 0) {
           var w = line.split(" ")[0];
@@ -128,13 +131,13 @@ class Lemmatizer {
       return lemma;
     }
 
-    var lst = MORPHOLOGICAL_SUBSTITUTIONS[pos];
+    var lst = MORPHOLOGICAL_SUBSTITUTIONS[pos]!;
     for (var item in lst) {
       var _old = item[0];
       var _new = item[1];
       if (form.endsWith(_old)) {
         var res = eachSubstitutions(
-            form.substring(0, form.length - _old.length) + _new, pos);
+            form.substring(0, form.length - _old.length as int?) + _new, pos);
         if (res != null) {
           return res;
         }
@@ -142,29 +145,25 @@ class Lemmatizer {
     }
   }
 
-  POS strToPos(String str) {
+  POS strToPos(String? str) {
     switch (str) {
       case "n":
       case "noun":
         return POS.NOUN;
-        break;
       case "v":
       case "verb":
         return POS.VERB;
-        break;
       case "a":
       case "j":
       case "adjective":
       case "adj":
         return POS.ADJ;
-        break;
       case "r":
       case "adverb":
       case "adv":
         return POS.ABBR;
       default:
         return POS.UNKNOWN;
-        break;
     }
   }
 }
